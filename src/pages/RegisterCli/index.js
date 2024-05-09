@@ -44,7 +44,7 @@ export default function RegisterCli() {
         .then(response => response.json())
         .then((data) => {
             if (User){
-                alert("Deu")
+                alert("Usuário cadastrado")
                 AcessaHomi()
             }
             console.log('Sucesso:', data);
@@ -66,7 +66,7 @@ export default function RegisterCli() {
         
     }
     const AcessaHomi = () => {
-        navigation.navigate("HomeCli")
+        navigation.navigate("SignIn")
     }
 
     return (

@@ -14,6 +14,7 @@ app.use(cors()); // Habilitando o CORS
 
 //Models
 const User = require('./src/model/User');
+const Rest = require('./src/model/Rest');
 
 //Open Route - Public Route
 app.get('/', (req, res) => {
@@ -54,6 +55,49 @@ app.get('/user/:id', checkToken, async (req, res) => {
 });
 
 
+// Registro Restaurante
+app.post('/auth/register_rest', async (req, res) => {
+    const { name, email, cep, cnpj, pass, confirmPass } = req.body;
+
+    //Validação
+    if (name === '' || email === '' || pass === '' || confirmPass === '' || cnpj ==='' || cep ==='') {
+        return res.status(422).json({ msg: 'Preencha todos os campos' });
+    }
+    if (pass !== confirmPass) {
+        return res.status(422).json({ msg: "As senhas não conferem" });
+    }
+
+    //Checando existencia de usuario
+    const restExists = await Rest.findOne({ email: email });
+    if (restExists) {
+        
+        return res.status(422).json({ msg: "Por favor, utilize outro e-mail" });
+    }
+
+    //criando senha
+    const salt = await bcrypt.genSalt(12);
+    const passHash = await bcrypt.hash(pass, salt);
+
+    //Criar Usuario
+    const rest = new Rest({
+        name,
+        email,
+        cep,
+        cnpj,
+        pass: passHash
+    });
+
+    try {
+        await rest.save();
+        console.log(name, email,cep, cnpj, pass, passHash);
+        res.status(201).json({ msg: "Usuário criado com sucesso" });
+
+    } catch (e) {
+        res.status(500).json({ msg: "Ocorreu um erro no servidor, tente novamente mais tarde", e });
+    }
+});
+
+
 //Register
 app.post('/auth/register', async (req, res) => {
     const { name, email, pass, confirmPass } = req.body;
@@ -69,6 +113,7 @@ app.post('/auth/register', async (req, res) => {
     //Checando existencia de usuario
     const userExists = await User.findOne({ email: email });
     if (userExists) {
+
         return res.status(422).json({ msg: "Por favor, utilize outro e-mail" });
     }
 
@@ -120,6 +165,41 @@ app.post("/auth/login", async (req, res) => {
         const secret = process.env.SECRET;
         const token = jwt.sign({
             id: user._id
+        }, secret);
+        res.status(200).json({ msg: "Autenticação realizada com sucesso", token });
+    } catch (err) {
+        console.log(err);
+        res.status(500).json({ msg: "Ocorreu um erro no servidor", err });
+    }
+});
+
+//Login Rest
+app.post("/auth/login_rest", async (req, res) => {
+    const { email, pass } = req.body;
+
+    //Validação
+    if (!email || !pass) {
+        return res.status(422).json({ msg: 'O email e a senha são obrigatórios' });
+    }
+
+    //
+    const rest = await Rest.findOne({ email: email } );
+    if (!rest) {
+        return res.status(404).json({ msg: 'Usuário não existe' });
+    }
+
+    //Check de senha
+    const checkPass = await bcrypt.compare(pass, rest.pass);
+
+    if (!checkPass) {
+        res.status(422).json({ msg: "Senha incorreta" });
+        return 
+    }
+
+    try {
+        const secret = process.env.SECRET;
+        const token = jwt.sign({
+            id: rest._id
         }, secret);
         res.status(200).json({ msg: "Autenticação realizada com sucesso", token });
     } catch (err) {

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, Text, StyleSheet, TextInput, TouchableOpacity } from 'react-native';
 
 import { useNavigation } from '@react-navigation/native';
@@ -6,6 +6,51 @@ import { useNavigation } from '@react-navigation/native';
 import * as Animatable from 'react-native-animatable'
 export default function SignInRest() {
     const navigation = useNavigation();
+    const[email, setEmail] = useState('')
+    const[pass, setPass] = useState('')
+
+    function logandoRest() {
+        console.log('If Teste');
+        if (email === '' || pass === '') {
+            alert("Todos os campos devem ser preenchidos");
+            return;
+        } else if (email === '') {
+            alert("Digite seu e-mail");
+            return;
+        } else if (pass === '') {
+            alert ("Digite sua senha");
+            return;
+        }
+
+        fetch('http://192.168.0.102:3000/auth/login_rest', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                email: email,
+                pass: pass,
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log('Login bem-sucedido:', data);
+            if(data.token){
+
+                AcessaHomi()
+            }
+
+            // fetchUserData(data.token);
+
+        })
+        .catch(error => console.error('Erro no login:', error));
+    }
+    const AcessaHomi = () => {
+        navigation.navigate("HomeCli")
+    }
+
+
+
     return (
         <View style={styles.container}>
             <Animatable.View animation="fadeInLeft" delay={500} style={styles.containerHeader} >
@@ -18,6 +63,7 @@ export default function SignInRest() {
                     placeholder="Digite um email"
                     style={styles.input}
                     keyboardType='email-address'
+                    onChangeText={setEmail}
                 />
 
                 <Text style={styles.title}>Senha</Text>
@@ -25,9 +71,10 @@ export default function SignInRest() {
                     placeholder="Digite sua senha"
                     style={styles.input}
                     secureTextEntry={true}
+                    onChangeText={setPass}
                 />
 
-                <TouchableOpacity style={styles.button}>
+                <TouchableOpacity style={styles.button} onPress={logandoRest}>
                     <Text style={styles.buttonText}>Acessar</Text>
                 </TouchableOpacity>
 
