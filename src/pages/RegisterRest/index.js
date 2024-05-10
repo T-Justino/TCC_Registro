@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet, TextInput, TouchableOpacity, Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import * as Animatable from 'react-native-animatable';
+import Rest from '../../model/Rest';
 
 export default function RegisterRest() {
     const navigation = useNavigation();
@@ -39,9 +40,9 @@ export default function RegisterRest() {
         })
         .then(response => response.json())
         .then((data) => {
-            if (data.Rest) {
+            if (Rest) {
                 Alert.alert("Restaurante cadastrado");
-                navigation.navigate("SignIn");
+                navigation.navigate("SignInRest");
             }
             console.log('Sucesso:', data);
         })
