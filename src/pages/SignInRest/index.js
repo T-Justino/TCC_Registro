@@ -34,6 +34,8 @@ export default function SignInRest() {
         })
         .then(response => response.json())
         .then(data => {
+            console.log('Resposta da API recebida');
+            console.log('Dados recebidos:', data);
             console.log('Login bem-sucedido:', data);
             if(data.token){
 
@@ -72,6 +74,7 @@ export default function SignInRest() {
                     style={styles.input}
                     secureTextEntry={true}
                     onChangeText={setPass}
+                    value={pass}
                 />
 
                 <TouchableOpacity style={styles.button} onPress={logandoRest}>

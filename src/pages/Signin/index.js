@@ -1,24 +1,21 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TextInput, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, TextInput, TouchableOpacity, Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import * as Animatable from 'react-native-animatable';
-import User from '../../model/User';
 
 export default function SignIn() {
     const navigation = useNavigation();
     const [email, setEmail] = useState('');
     const [pass, setPass] = useState('');
-    
+
     function logandoUser() {
-        console.log('Ift Teste');
-        if (email === '' || pass === '') {
-            alert("Todos os campos devem ser preenchidos");
-            return;
-        } else if (email === '') {
-            alert("Digite seu e-mail");
+        console.log('Iniciando processo de login');
+
+        if (email === '') {
+            Alert.alert("Digite seu e-mail");
             return;
         } else if (pass === '') {
-            alert ("Digite sua senha");
+            Alert.alert("Digite sua senha");
             return;
         }
 
@@ -34,19 +31,19 @@ export default function SignIn() {
         })
         .then(response => response.json())
         .then(data => {
-            console.log('Login bem-sucedido:', data);
-            if(data.token){
+            console.log('Resposta da API recebida');
+            console.log('Dados recebidos:', data);
 
-                AcessaHomi()
+            if (data.token) {
+                navigation.navigate("HomeCli", { token: data.token }); // Passa o token para a próxima tela
+            } else {
+                throw new Error('Token não recebido');
             }
-
-            // fetchUserData(data.token);
-
         })
-        .catch(error => console.error('Erro no login:', error));
-    }
-    const AcessaHomi = () => {
-        navigation.navigate("HomeCli")
+        .catch(error => {
+            console.error('Erro no login:', error);
+            Alert.alert('Erro', 'Não foi possível realizar o login');
+        });
     }
 
     return (
@@ -61,7 +58,7 @@ export default function SignIn() {
                     placeholder="Digite um email"
                     style={styles.input}
                     keyboardType='email-address'
-                    onChangeText={(text)=>setEmail(text)}
+                    onChangeText={setEmail}
                     value={email}
                 />
 
@@ -70,7 +67,7 @@ export default function SignIn() {
                     placeholder="Digite sua senha"
                     style={styles.input}
                     secureTextEntry={true}
-                    onChangeText={(text)=>setPass(text)}
+                    onChangeText={setPass}
                 />
 
                 <TouchableOpacity style={styles.button} onPress={logandoUser}>
@@ -80,7 +77,6 @@ export default function SignIn() {
                 <TouchableOpacity style={styles.buttonRegister} onPress={() => navigation.navigate('RegisterCli')}>
                     <Text style={styles.registerText}>Não possui uma conta? Cadastre-se</Text>
                 </TouchableOpacity>
-
             </Animatable.View>
 
         </View>
@@ -120,25 +116,25 @@ const styles = StyleSheet.create({
         marginBottom: 12,
         fontSize: 16
     },
-    button:{
-        backgroundColor:'red',
-        width:'100%',
-        borderRadius:4,
-        paddingVertical:8,
-        marginTop:14,
-        justifyContent:'center',
-        alignItems:'center'
+    button: {
+        backgroundColor: 'red',
+        width: '100%',
+        borderRadius: 4,
+        paddingVertical: 8,
+        marginTop: 14,
+        justifyContent: 'center',
+        alignItems: 'center'
     },
-    buttonText:{
-        color:'#000',
-        fontSize:18,
-        fontWeight:'bold'
+    buttonText: {
+        color: '#000',
+        fontSize: 18,
+        fontWeight: 'bold'
     },
-    buttonRegister:{
-        marginTop:14,
-        alignSelf:'center'
+    buttonRegister: {
+        marginTop: 14,
+        alignSelf: 'center'
     },
-    registerText:{
-        color:'#a1a1a1'
+    registerText: {
+        color: '#a1a1a1'
     }
 });

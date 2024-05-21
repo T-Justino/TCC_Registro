@@ -1,11 +1,17 @@
-const mongoose = require('mongoose')
+const mongoose = require('mongoose');
 
-const Rest = mongoose.model('Rest',{
+const RestSchema = new mongoose.Schema({
     name: String,
     email: String,
-    cnpj: String,
     cep: String,
+    cnpj: String,
     pass: String,
-})
+    cidade: String,
+    bairro: String,
+    rua: String,
+    numero: String
+});
 
-module.exports = Rest
+const Rest = mongoose.model('Rest', RestSchema);
+
+module.exports = Rest;

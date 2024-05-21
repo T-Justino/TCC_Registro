@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet, TextInput, TouchableOpacity, Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import * as Animatable from 'react-native-animatable';
-import Rest from '../../model/Rest';
 
 export default function RegisterRest() {
     const navigation = useNavigation();
@@ -14,7 +13,7 @@ export default function RegisterRest() {
     const [pass, setPass] = useState("");
     const [confirmPass, setConfirmPass] = useState("");
 
-    function handleSignup() {
+    const handleSignup = async () => {
         if (!name || !email || !pass || !confirmPass || !cnpj || !cep) {
             Alert.alert("Preencha todos os campos");
             return;
@@ -24,32 +23,31 @@ export default function RegisterRest() {
             return;
         }
 
-        fetch('http://192.168.0.102:3000/auth/register_rest', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                name: name,
-                email: email,
-                cnpj: cnpj,
-                cep: cep,
-                pass: pass,
-                confirmPass: confirmPass
-            }),
-        })
-        .then(response => response.json())
-        .then((data) => {
-            if (Rest) {
-                Alert.alert("Restaurante cadastrado");
-                navigation.navigate("SignInRest");
+        try {
+            const response = await fetch(`https://brasilapi.com.br/api/cep/v1/${cep}`);
+            if (!response.ok) {
+                throw new Error('CEP inválido');
             }
-            console.log('Sucesso:', data);
-        })
-        .catch((error) => {
-            console.error('Erro:', error);
-        });
+            const data = await response.json();
+            if (!data.cep) {
+                Alert.alert('Erro', 'CEP inválido');
+                return;
+            }
+
+            navigation.navigate('Endereco', {
+                name,
+                email,
+                cnpj,
+                cep,
+                pass,
+                confirmPass
+            });
+        } catch (error) {
+            console.error(error);
+            Alert.alert('Erro', 'Não foi possível obter os dados do CEP');
+        }
     }
+
 
     return (
         <View style={styles.container}>
@@ -80,6 +78,7 @@ export default function RegisterRest() {
                     style={styles.input}
                     keyboardType='number-pad'
                     onChangeText={setCep}
+                    value={cep}
                 />
 
                 <Text style={styles.title}>Email</Text>
@@ -106,15 +105,13 @@ export default function RegisterRest() {
                 />
 
                 <TouchableOpacity style={styles.button} onPress={handleSignup}>
-                    <Text style={styles.buttonText}>Acessar</Text>
+                    <Text style={styles.buttonText}>Próximo</Text>
                 </TouchableOpacity>
 
                 <TouchableOpacity style={styles.buttonRegister} onPress={() => navigation.navigate('SignInRest')}>
-                    <Text style={styles.registerText}>Não possui uma conta? Cadastre-se</Text>
+                    <Text style={styles.registerText}>Já possui uma conta? Entre</Text>
                 </TouchableOpacity>
-
             </Animatable.View>
-
         </View>
     );
 }
